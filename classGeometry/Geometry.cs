@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Drawing;
 
-namespace Geometry
+namespace classGeometry
 {
     class Vector
     {
@@ -60,7 +61,7 @@ namespace Geometry
             return Math.Acos(this.scalar(a) / (this.Len() * a.Len()));
         }
     }
-    class Point
+    public class Point
     {
         internal int x;
         internal int y;
@@ -91,11 +92,22 @@ namespace Geometry
         }
     }
 
-    class Polygon
+    public class Polygon
     {
         List<Point> listPoint = new List<Point>();
         public Polygon() { }
-
+        public int Count { get { return listPoint.Count; } }
+        public System.Drawing.Point GetPoint(int index)
+        {
+            System.Drawing.Point p = new System.Drawing.Point();
+            try
+            {
+                p = new System.Drawing.Point(listPoint[index].x, listPoint[index].y);
+              
+            }
+            catch { }
+            return p;
+        }
         public Polygon(string s)
         {
             try
@@ -182,8 +194,9 @@ namespace Geometry
             Polygon polygon = new Polygon();
             foreach (var p in upHull)
                 polygon.Add(p);
+            polygon.Add(endPoint);
             //нижнюю оболочку надо записать вобратном порядке
-            for (int i = downHull.Count - 1; i > -1; i--)
+            for (int i = downHull.Count - 1; i > 0; i--)
                 polygon.Add(downHull[i]);
             return polygon;
         }
