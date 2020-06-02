@@ -13,12 +13,16 @@ namespace classGeometry
         static void Main(string[] args)
         {
             //string input = "6 3 12 1 14 6 11 8 5 8";
-            string input = "5 8 8 8 11 8 14 6 6 6 10 4 6 3 12 1";
-            //string input = "8 4 5 9 6 8 6 5 1 1 2 4 4 4 5 9";
+            //string input = "5 8 8 8 11 8 14 6 6 6 10 4 6 3 12 1";
+            string input = "8 4 5 9 6 8 6 5 1 1 2 4 4 4 5 9";
             Polygon polygon = new Polygon(input);
             Console.WriteLine(polygon);
             Polygon сonvexPolygon = polygon.СonvexHull();
+            Console.WriteLine("\nВыпуклая оболочка");
             Console.WriteLine(сonvexPolygon);
+            Console.WriteLine("Площадь через треугольник\t\t " + сonvexPolygon.SquareV());
+            Console.WriteLine("Площадь через трапеции \t\t\t" + сonvexPolygon.Square2());
+            Console.WriteLine("Площадь через треугольники и вектора \t" + сonvexPolygon.SquareFromVector());
         }
     }
     class Vector
@@ -111,7 +115,7 @@ namespace classGeometry
         List<Point> listPoint = new List<Point>();
         public Polygon() { }
 
-            public Polygon(string s)
+        public Polygon(string s)
         {
             try
             {
@@ -133,6 +137,7 @@ namespace classGeometry
         {
             listPoint.Add(p);
         }
+        
         /// <summary>
         /// Сравнение двух точек
         /// </summary>
@@ -228,21 +233,28 @@ namespace classGeometry
             Vector v2 = new Vector(p2, p3);
             return v1.LeftTurn(v2);
         }
+
+        /// <summary>
+        /// вычисление площади произвольного n-угольник через треугольники и формулу Герона
+        /// </summary>
+        /// <returns>возвращает площадь с маленькой точностью</returns>
         public double SquareV()
         {
             int n = listPoint.Count;
             double s = 0;
             for (int i = 1; i < n - 1; i++)
             {
-                Treug tr = new Treug(listPoint[0], listPoint[i], listPoint[i + 1]);
-                Console.WriteLine(tr.Square());
+                Triangle tr = new Triangle(listPoint[0], listPoint[i], listPoint[i + 1]);
                 s += tr.Square();
             }
             return s;
         }
 
-        
-        // вычисление площади произвольного n-угольник
+
+        /// <summary>
+        /// вычисление площади произвольного n-угольник через трапеции
+        /// </summary>
+        /// <returns>возвращает удвоенную беззнаковую площадь</returns>
         public int Square2()
         {
            
@@ -264,19 +276,40 @@ namespace classGeometry
             return (t1.y + t2.y) * (t2.x - t1.x);
         }
 
+        /// <summary>
+        /// вычисления площади n-угольника через векторное произведение
+        /// </summary>
+        /// <returns></returns>
+        public int SquareFromVector()
+        {
+            int n = listPoint.Count;
+            int s = 0;
+            for (int i = 1; i < n - 1; i++)
+            {
+                Triangle tr = new Triangle(listPoint[0], listPoint[i], listPoint[i + 1]);
+                s += tr.SquareVector();
+            }
+            return s;
+
+
+        }
         public override string ToString()
         {
 
             return "число точек = " + listPoint.Count +"\n" + string.Join("\n", listPoint);
                 
         }
+
     }
 
-    class Treug
+    /// <summary>
+    /// Класс треугольник
+    /// </summary>
+    class Triangle
     {
         Point t1, t2, t3;
 
-        public Treug(Point t1, Point t2, Point t3)
+        public Triangle(Point t1, Point t2, Point t3)
         {
             this.t1 = t1;
             this.t2 = t2;
@@ -285,20 +318,30 @@ namespace classGeometry
 
         public double Square()
         {
-            double a = length(t1, t2);
-            double b = length(t2, t3);
-            double c = length(t3, t1);
+            double a = Length(t1, t2);
+            double b = Length(t2, t3);
+            double c = Length(t3, t1);
             double p = this.Perimetr() / 2;
             return Math.Sqrt(p * (p - a) * (p - b) * (p - c));
         }
+        /// <summary>
+        /// вычисление площади треугольник через векторное/псевдовекторное произведение
+        /// </summary>
+        /// <returns>возвращает удвоенную знаковую площадь</returns>
+        public int SquareVector()
+        {
+            Vector a = new Vector(t1, t2);
+            Vector b = new Vector(t2, t3);
+            return a.Psescalar(b);
+        }
         public double Perimetr()
         {
-            double a = length(t1, t2);
-            double b = length(t2, t3);
-            double c = length(t3, t1);
+            double a = Length(t1, t2);
+            double b = Length(t2, t3);
+            double c = Length(t3, t1);
             return a + b + c;
         }
-        private double length(Point t1, Point t2)
+        private double Length(Point t1, Point t2)
         {
             return Math.Sqrt((t1.x - t2.x) * (t1.x - t2.x) + (t1.y - t2.y) * (t1.y - t2.y));
         }
